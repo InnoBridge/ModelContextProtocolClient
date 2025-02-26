@@ -21,17 +21,27 @@ services:
       - ./local/root:/root
       # - ../ModelContextProtocolClient:/ModelContextProtocolClient # Use for local development
     tty: true
-    # Use entrypoint instead of command to ensure the container keeps running
-    entrypoint: >
-      bash -c "
-        # Install Node.js and npm (which includes npx)
-        apt-get update && 
-        apt-get install -y curl &&
-        curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&
-        apt-get install -y nodejs &&
-        # Keep the container running
-        tail -f /dev/null
-      "
+
+  ############ modelcontextprotocolserver application ############
+  modelcontextprotocolserver_application:
+    image: openjdk:22-slim
+    container_name: modelcontextprotocolserver-application
+    working_dir: /app
+    # For Linux: use network_mode: "host"
+    network_mode: "host"
+    # For Mac: Comment out network_mode: "host" above and uncomment these lines:
+    # extra_hosts:
+    #   - "localhost:192.168.65.2"
+    ports:
+      - 8081:8081
+      - 5006:5006
+    env_file:
+      - .env
+    volumes:
+      - ../ModelContextProtocolServer:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./local/root:/root
+    tty: true
 
 networks:
   app-network:

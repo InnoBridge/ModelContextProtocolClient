@@ -30,7 +30,7 @@ public class MCPConfiguration {
      *
      * @return The McpSyncClient
      */
-    @Bean(name = "braveSearch")
+    @Bean(name = "braveSearch", destroyMethod = "close")
     public McpSyncClient mcpSyncClient() {
         log.info("Initializing McpSyncClient for Brave Search");
         

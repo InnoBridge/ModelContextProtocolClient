@@ -20,8 +20,18 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local/root:/root
       # - ../ModelContextProtocolClient:/ModelContextProtocolClient # Use for local development
-    tty: true
-
+ # Use entrypoint instead of command to ensure the container keeps running
+    entrypoint: >
+      bash -c "
+        # Install Node.js and npm (which includes npx)
+        apt-get update && 
+        apt-get install -y curl &&
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&
+        apt-get install -y nodejs &&
+        # Keep the container running
+        tail -f /dev/null
+      "
+      
   ############ modelcontextprotocolserver application ############
   modelcontextprotocolserver_application:
     image: openjdk:22-slim

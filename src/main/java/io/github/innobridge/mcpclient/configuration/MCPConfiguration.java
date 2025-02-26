@@ -1,21 +1,19 @@
 package io.github.innobridge.mcpclient.configuration;
 
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
 import io.modelcontextprotocol.spec.ClientMcpTransport;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Configuration for Model Context Protocol Client.
@@ -32,7 +30,7 @@ public class MCPConfiguration {
      *
      * @return The McpSyncClient
      */
-    @Bean
+    @Bean(name = "braveSearch")
     public McpSyncClient mcpSyncClient() {
         log.info("Initializing McpSyncClient for Brave Search");
         

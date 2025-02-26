@@ -1,22 +1,23 @@
 package io.github.innobridge.mcpclient.controller;
 
-import io.modelcontextprotocol.client.McpSyncClient;
-import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
-import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.ListToolsResult;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller for Model Context Protocol operations.
@@ -28,7 +29,8 @@ import java.util.Map;
 public class MCPController {
 
     @Autowired
-    private McpSyncClient mcpSyncClient;
+    @Qualifier("braveSearch")
+    private McpSyncClient braveSearchClient;
 
     /**
      * Hello World endpoint.
@@ -45,7 +47,7 @@ public class MCPController {
     @GetMapping("/tools")
     @Operation(summary = "Tools endpoint", description = "Returns a list of tools")
     public ResponseEntity<ListToolsResult> tools() {
-        ListToolsResult result = mcpSyncClient.listTools();
+        ListToolsResult result = braveSearchClient.listTools();
         return ResponseEntity.ok(result);
     }
 
@@ -61,7 +63,7 @@ public class MCPController {
         );
         
         // Call the tool and get the result
-        CallToolResult result = mcpSyncClient.callTool(toolRequest);
+        CallToolResult result = braveSearchClient.callTool(toolRequest);
         
         return ResponseEntity.ok(result);
     }

@@ -26,11 +26,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Model Context Protocol", description = "API endpoints for Model Context Protocol operations")
-public class MCPController {
+public class McpController {
 
     @Autowired
     @Qualifier("braveSearch")
     private McpSyncClient braveSearchClient;
+
+    @Autowired
+    @Qualifier("webFlux")
+    private McpSyncClient webFluxClient;
 
     /**
      * Hello World endpoint.
@@ -44,10 +48,17 @@ public class MCPController {
         return ResponseEntity.ok("Hello World from MCP Client!");
     }
 
-    @GetMapping("/tools")
+    @GetMapping("/tools/bravesearch")
     @Operation(summary = "Tools endpoint", description = "Returns a list of tools")
-    public ResponseEntity<ListToolsResult> tools() {
+    public ResponseEntity<ListToolsResult> bravesearchTools() {
         ListToolsResult result = braveSearchClient.listTools();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/tools/webflux")
+    @Operation(summary = "Tools endpoint", description = "Returns a list of tools")
+    public ResponseEntity<ListToolsResult> webfluxTools() {
+        ListToolsResult result = webFluxClient.listTools();
         return ResponseEntity.ok(result);
     }
 
@@ -64,6 +75,52 @@ public class MCPController {
         
         // Call the tool and get the result
         CallToolResult result = braveSearchClient.callTool(toolRequest);
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/calculate")
+    @Operation(summary = "Calculate endpoint", description = "Performs calculations using the calculate tool")
+    public ResponseEntity<CallToolResult> calculate(
+            @RequestParam String operation,
+            @RequestParam double a,
+            @RequestParam double b) {
+        log.info("Calculate requested: {} {} {}", a, operation, b);
+        
+        // Create a CallToolRequest with the "calculator" tool and parameters
+        CallToolRequest toolRequest = new CallToolRequest(
+            "calculator",  // Tool name
+            Map.of(
+                "operation", operation,
+                "a", a,
+                "b", b
+            )  // Tool parameters
+        );
+        
+        // Call the tool and get the result
+        CallToolResult result = webFluxClient.callTool(toolRequest);
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/weather")
+    @Operation(summary = "Weather endpoint", description = "Gets weather information using the weather tool")
+    public ResponseEntity<CallToolResult> weather(
+            @RequestParam String location,
+            @RequestParam(required = false, defaultValue = "celsius") String format) {
+        log.info("Weather requested for location: {} with format: {}", location, format);
+        
+        // Create a CallToolRequest with the "get_current_weather" tool and parameters
+        CallToolRequest toolRequest = new CallToolRequest(
+            "get_current_weather",  // Tool name
+            Map.of(
+                "location", location,
+                "format", format
+            )  // Tool parameters
+        );
+        
+        // Call the tool and get the result
+        CallToolResult result = webFluxClient.callTool(toolRequest);
         
         return ResponseEntity.ok(result);
     }

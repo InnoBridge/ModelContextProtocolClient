@@ -36,6 +36,10 @@ public class McpController {
     @Qualifier("webFlux")
     private McpSyncClient webFluxClient;
 
+    @Autowired
+    @Qualifier("stdio")
+    private McpSyncClient stdioClient;
+
     /**
      * Hello World endpoint.
      *
@@ -46,6 +50,19 @@ public class McpController {
     public ResponseEntity<String> helloWorld() {
         log.info("Hello World requested");
         return ResponseEntity.ok("Hello World from MCP Client!");
+    }
+
+    /**
+     * List tools from stdio server.
+     *
+     * @return List of available tools
+     */
+    @GetMapping("/stdio/tools")
+    @Operation(summary = "List tools from stdio server", description = "Returns a list of available tools from the stdio server")
+    public ResponseEntity<ListToolsResult> listStdioTools() {
+        log.info("Listing tools from stdio server");
+        ListToolsResult result = stdioClient.listTools();
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/tools/bravesearch")
@@ -79,9 +96,9 @@ public class McpController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/calculate")
+    @PostMapping("/webflux/calculate")
     @Operation(summary = "Calculate endpoint", description = "Performs calculations using the calculate tool")
-    public ResponseEntity<CallToolResult> calculate(
+    public ResponseEntity<CallToolResult> webfluxCalculate(
             @RequestParam String operation,
             @RequestParam double a,
             @RequestParam double b) {
@@ -103,9 +120,33 @@ public class McpController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/weather")
+    @PostMapping("/stdio/calculate")
+    @Operation(summary = "Calculate endpoint", description = "Performs calculations using the calculate tool")
+    public ResponseEntity<CallToolResult> stdioCalculate(
+            @RequestParam String operation,
+            @RequestParam double a,
+            @RequestParam double b) {
+        log.info("Calculate requested: {} {} {}", a, operation, b);
+        
+        // Create a CallToolRequest with the "calculator" tool and parameters
+        CallToolRequest toolRequest = new CallToolRequest(
+            "calculator",  // Tool name
+            Map.of(
+                "operation", operation,
+                "a", a,
+                "b", b
+            )  // Tool parameters
+        );
+        
+        // Call the tool and get the result
+        CallToolResult result = stdioClient.callTool(toolRequest);
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/webflux/weather")
     @Operation(summary = "Weather endpoint", description = "Gets weather information using the weather tool")
-    public ResponseEntity<CallToolResult> weather(
+    public ResponseEntity<CallToolResult> webfluxWeather(
             @RequestParam String location,
             @RequestParam(required = false, defaultValue = "celsius") String format) {
         log.info("Weather requested for location: {} with format: {}", location, format);
@@ -121,6 +162,28 @@ public class McpController {
         
         // Call the tool and get the result
         CallToolResult result = webFluxClient.callTool(toolRequest);
+        
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/stdio/weather")
+    @Operation(summary = "Weather endpoint", description = "Gets weather information using the weather tool")
+    public ResponseEntity<CallToolResult> stdioWeather(
+            @RequestParam String location,
+            @RequestParam(required = false, defaultValue = "celsius") String format) {
+        log.info("Weather requested for location: {} with format: {}", location, format);
+        
+        // Create a CallToolRequest with the "get_current_weather" tool and parameters
+        CallToolRequest toolRequest = new CallToolRequest(
+            "get_current_weather",  // Tool name
+            Map.of(
+                "location", location,
+                "format", format
+            )  // Tool parameters
+        );
+        
+        // Call the tool and get the result
+        CallToolResult result = stdioClient.callTool(toolRequest);
         
         return ResponseEntity.ok(result);
     }

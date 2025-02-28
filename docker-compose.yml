@@ -19,7 +19,7 @@ services:
       - .:/app
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local/root:/root
-      # - ../ModelContextProtocolClient:/ModelContextProtocolClient # Use for local development
+      - ../ModelContextProtocolServer:/ModelContextProtocolServer # Use for local development
  # Use entrypoint instead of command to ensure the container keeps running
     entrypoint: >
       bash -c "

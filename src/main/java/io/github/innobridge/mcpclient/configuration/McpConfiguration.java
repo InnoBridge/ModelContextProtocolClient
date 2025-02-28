@@ -80,6 +80,31 @@ public class McpConfiguration {
     }
     
     /**
+     * Creates a McpSyncClient bean for Stdio MCP Server.
+     *
+     * @return The McpSyncClient
+     */
+    @Bean(name = "stdio", destroyMethod = "close")
+    public McpSyncClient stdioMcpSyncClient(
+            @Qualifier("stdioTransport") ClientMcpTransport transport) {
+        log.info("Initializing McpSyncClient for Stdio MCP Server");
+        
+        // Create a sync client with custom configuration
+        McpSyncClient client = McpClient.sync(transport)
+            .requestTimeout(Duration.ofSeconds(30))
+            .capabilities(ClientCapabilities.builder()
+                .roots(true)      // Enable roots capability
+                .sampling()       // Enable sampling capability
+                .build())
+            .build();
+
+        // Initialize connection
+        client.initialize();
+        
+        return client;
+    }
+
+    /**
      * Creates a ClientMcpTransport bean for WebFlux MCP Server.
      *
      * @return The ClientMcpTransport for WebFlux MCP Server
@@ -89,6 +114,32 @@ public class McpConfiguration {
         return new WebFluxSseClientTransport(
             WebClient.builder()
             .baseUrl("http://localhost:8081"));
+    }
+
+    /**
+     * Creates a ClientMcpTransport bean for Stdio MCP Server.
+     *
+     * @return The ClientMcpTransport for Stdio MCP Server
+     */
+    @Bean(name = "stdioTransport")
+    public ClientMcpTransport createStdioTransport() {
+        log.info("Creating StdioClientTransport");
+        
+        // Using StdioClientTransport with local MCP server jar
+        ServerParameters params = ServerParameters.builder("java")
+            .args(
+                "-Dtransport.mode=stdio",
+                "-Dspring.main.web-application-type=none",  // Disable web server
+                "-Dspring.main.banner-mode=off",
+                "-Dlogging.pattern.console=",  // Disable console logging pattern
+                "-Dlogging.file.name=../logs/mcpserver.log",  // Redirect logs to file
+                "-jar",
+                "../ModelContextProtocolServer/target/mcpserver-0.0.1-SNAPSHOT.jar"
+            )
+            .build();
+        
+        log.info("Starting server process with jar: {}", "../ModelContextProtocolServer/target/mcpserver-0.0.1-SNAPSHOT.jar");
+        return new StdioClientTransport(params);
     }
 
     /**
